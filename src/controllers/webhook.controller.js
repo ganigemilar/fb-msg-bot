@@ -1,6 +1,6 @@
 const express = require("express")
 const router = express.Router()
-const client = require("axios")
+const client = require("axios").default
 const { default: axios } = require("axios")
 
 const state = {
@@ -21,13 +21,13 @@ const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN
 const SEND_API_URL = `https://graph.facebook.com/v12.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`
 
 router.post("/", async function (request, response) {
-    let body = request.body
+    let body = request.body.entry[0]
 
     if (!body)
         return response.status(404)
 
-    replyMessageData = function() {
-        data = {
+    const replyMessageData = function() {
+        let data = {
             "messaging_type": "RESPONSE",
             "recipient": {
                 "id": body.sender.id
@@ -45,20 +45,20 @@ router.post("/", async function (request, response) {
             data.message.text = "Do you want to know how many days next your birthday?"
             state.stepMessage += 1
         } else if (state.isLastMessage()) {
-            possAnswers = ["yes", "yeah", "yup", "no", "nah"]
-            answer = body.message.text
+            let possAnswers = ["yes", "yeah", "yup", "no", "nah"]
+            let answer = body.message.text
             
-            valid = false
+            let valid = false
             for (possAns of possAnswers) {
                 valid = answer.toLocaleLowerCase().includes(possAns)
                 if (valid) break
             }
 
             if (valid) {
-                birthdate = new Date(state.user.birthdate)
-                today = new Date()
-                nextYear = new Date(`${today.getFullYear() + 1}-${birthdate.getMonth() + 1}-${birthdate.getDate()}`)
-                rangeInDays = Math.round(Math.abs((nextYear - today) / (24 * 60 * 60 * 1000)))
+                let birthdate = new Date(state.user.birthdate)
+                let today = new Date()
+                let nextYear = new Date(`${today.getFullYear() + 1}-${birthdate.getMonth() + 1}-${birthdate.getDate()}`)
+                let rangeInDays = Math.round(Math.abs((nextYear - today) / (24 * 60 * 60 * 1000)))
 
                 data.message.text = `There are ${rangeInDays} days left until your next birthday`
             } else
@@ -81,9 +81,9 @@ router.post("/", async function (request, response) {
         state.stepMessage += 1
     }
 
-    msgData = replyMessageData()
+    let msgData = replyMessageData()
 
-    await axios.post(SEND_API_URL, msgData).then(res => {
+    await client.post(SEND_API_URL, msgData).then(res => {
         // console.log(res)
         console.log(msgData)
         console.log(state.user)

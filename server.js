@@ -10,6 +10,6 @@ app.listen(SERVER_PORT, function() {
     console.log("Server listening at : " + SERVER_PORT)
 })
 
-app.use(bodyParser.json(), bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.json(), bodyParser.urlencoded())
 app.use("/webhook", require("./src/controllers/webhook.controller"))
 
